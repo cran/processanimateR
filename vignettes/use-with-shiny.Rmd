@@ -1,35 +1,28 @@
-#' @title Interactive Process Animation
-#'
-#' @description Creates an interactive Shiny dashbord that allows to configure the animation produced by processanimateR.
-#' @param eventlog The event log object that should be animated
-#' @param min.time Minimum animation time selectable
-#' @param max.time Maximum animation time selectable
-#' @param default.time Default animation time selectable
-#'
-#' @examples{
-#' \dontrun{
-#' library(eventdataR)
-#' library(edeaR)
-#' library(dplyr)
-#' ianimate_process(sepsis %>%
-#'  filter_trace_frequency(percentage = 0.2) %>%
-#'  filter_activity(c("Return ER"), reverse = T) %>%
-#'  # we fix the datatype of some of the attributes to allow proper rendering of the token color
-#'  # the token size option currently only support numeric attributes
-#'  mutate_at(c("lacticacid", "leucocytes", "crp", "age"), as.numeric) %>%
-#'  mutate_at(c("disfuncorg", "sirscriteria2ormore", "infectionsuspected"), as.logical))
-#' }
-#' }
-#'
-#' @author Felix Mannhardt <felix.mannhardt@sintef.no> (SINTEF Technology and Society)
-#'
-#' @seealso animate_process
-#' @import shiny
-#' @import dplyr
-#' @import processmapR
-#' @importFrom magrittr %>%
-#'
-#' @export
+---
+title: "Use processanimateR and Shiny"
+author: "Felix Mannhardt"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+ProcessanimateR animation can be also used interactively as part of a ([Shiny](https://shiny.rstudio.com)) web-application. Here, an example application that expects attributes are of an appropriate data type and automatically chooses appropriate color scales is given. We first define a function `ianimate_process` that defines our Shiny application as follows:
+
+
+```{r eval=FALSE}
+library(processanimateR)
+library(shiny)
+library(shinycssloaders)
 ianimate_process <- function(eventlog, min.time = 30, max.time = 600, default.time = 60) {
 
   ui <- function(request) {
@@ -79,7 +72,7 @@ ianimate_process <- function(eventlog, min.time = 30, max.time = 600, default.ti
       }
 
       if (input$sizeAttribute != "none") {
-        # TODO implement strategy for non-numeric attributes
+        # This only works for numeric attributes
         attr <- rlang::sym(input$sizeAttribute)
         val <- eventlog %>% pull(!!attr)
         if (is.numeric(val)) {
@@ -98,8 +91,8 @@ ianimate_process <- function(eventlog, min.time = 30, max.time = 600, default.ti
     })
 
     output$process <- renderProcessanimater(expr = {
-      model <- process_map(data(), render = F) %>%
-          DiagrammeR::add_global_graph_attrs(attr = "rankdir", value = input$orientation, attr_type = "graph")
+      graph <- processmapR::process_map(data(), render = F)
+      model <- DiagrammeR::add_global_graph_attrs(graph, attr = "rankdir", value = input$orientation, attr_type = "graph")
       if (input$sizeAttribute != "none" && input$colorAttribute != "none") {
         animate_process(data(), model,
                         animation_mode = input$type,
@@ -127,6 +120,24 @@ ianimate_process <- function(eventlog, min.time = 30, max.time = 600, default.ti
 
   }
 
-  shinyApp(ui, server)
+  shinyApp(ui, server, options = list(height = 500))
 
 }
+
+```
+
+
+Then, the application can be, for example, launched by calling:
+
+```{r eval=FALSE}
+library(eventdataR)
+library(edeaR)
+library(dplyr)
+ianimate_process(sepsis %>%
+  filter_trace_frequency(percentage = 0.2) %>%
+  filter_activity(c("Return ER"), reverse = T) %>%
+  # we fix the datatype of some of the attributes to allow proper rendering of the token color
+  # the token size option currently only support numeric attributes
+  mutate_at(c("lacticacid", "leucocytes", "crp", "age"), as.numeric) %>%
+  mutate_at(c("disfuncorg", "sirscriteria2ormore", "infectionsuspected"), as.logical))
+```
