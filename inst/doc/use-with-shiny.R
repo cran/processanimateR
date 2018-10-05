@@ -23,7 +23,11 @@ knitr::opts_chunk$set(
 #            selectInput("type", "Animation type", c("relative", "absolute"), "relative"),
 #            selectInput("sizeAttribute", "Size attribute", c("none", colnames(eventlog)), "none"),
 #            selectInput("colorAttribute", "Color attribute", c("none", colnames(eventlog)), "none"),
-#            selectInput("orientation", "Orientation", c("horizontal"="LR", "vertical"="TB"), "horizontal")
+#            selectInput("orientation", "Orientation", c("horizontal"="LR", "vertical"="TB"), "horizontal"),
+#            h4("Selected cases"),
+#            textOutput("token_selection"),
+#            h4("Selected activities"),
+#            textOutput("activity_selection")
 #          ),
 #  
 #          mainPanel(
@@ -75,6 +79,18 @@ knitr::opts_chunk$set(
 #  
 #      })
 #  
+#      output$token_selection <- renderText({
+#  
+#        paste0(input$process_tokens, ",")
+#  
+#      })
+#  
+#      output$activity_selection <- renderText({
+#  
+#        paste0(input$process_activities, ",")
+#  
+#      })
+#  
 #      output$process <- renderProcessanimater(expr = {
 #        graph <- processmapR::process_map(data(), render = F)
 #        model <- DiagrammeR::add_global_graph_attrs(graph, attr = "rankdir", value = input$orientation, attr_type = "graph")
@@ -83,7 +99,8 @@ knitr::opts_chunk$set(
 #                          animation_mode = input$type,
 #                          token_size = "size",
 #                          token_color = "color",
-#                          animation_duration = input$duration)
+#                          animation_duration = input$duration,
+#                          elementId = "process")
 #        } else if (input$sizeAttribute != "none") {
 #          animate_process(data(), model,
 #                          animation_mode = input$type,
@@ -108,7 +125,6 @@ knitr::opts_chunk$set(
 #    shinyApp(ui, server, options = list(height = 500))
 #  
 #  }
-#  
 
 ## ----eval=FALSE----------------------------------------------------------
 #  library(eventdataR)

@@ -15,10 +15,6 @@ dependencies:
     version: 3.5.2
     src: "htmlwidgets/lib/svg-pan-zoom"
     script: svg-pan-zoom.min.js
-  - name: viz
-    version: 1.8.1
-    src: "htmlwidgets/lib/viz"
-    script: viz.js
   - name: d3-simple-slider
     version: 0.2.1
     src: "htmlwidgets/lib/d3-simple-slider"
@@ -27,3 +23,13 @@ dependencies:
     version: 0.2.22.1
     src: "htmlwidgets/lib/momentjs"
     script: moment.min.js
+  - name: d3-legend
+    version: 2.25.6
+    src: "htmlwidgets/lib/d3-legend"
+    script: d3-legend.min.js
+  - name: viz
+    version: 2.0.0
+    src: "htmlwidgets/lib/viz"
+    script:
+     - viz.js
+     - lite.render.js
