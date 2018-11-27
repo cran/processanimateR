@@ -21,7 +21,9 @@ knitr::opts_chunk$set(
 #        h4("Selected cases"),
 #        textOutput(ns("token_selection")),
 #        h4("Selected activities"),
-#        textOutput(ns("activity_selection"))
+#        textOutput(ns("activity_selection")),
+#        h4("Current time"),
+#        textOutput(ns("activity_time"))
 #      )
 #    }
 #  
@@ -44,6 +46,14 @@ knitr::opts_chunk$set(
 #        }
 #      })
 #  
+#      output$activity_time <- renderText({
+#        if (is.null(input$process_time)) {
+#          "0"
+#        } else {
+#          input$process_time
+#        }
+#      })
+#  
 #      output$process <- renderProcessanimater(expr = {
 #        animate_process(eventlog, ...)
 #      })
@@ -57,7 +67,7 @@ knitr::opts_chunk$set(
 #  
 #    # Two animations
 #    server <- function(input, output, session) {
-#      callModule(animation, "module1", animation_mode = "relative")
+#      callModule(animation, "module1", mode = "relative")
 #      callModule(animation, "module2")
 #    }
 #  

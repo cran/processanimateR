@@ -45,18 +45,8 @@ knitr::opts_chunk$set(
 #        if (input$colorAttribute != "none") {
 #          attr <- rlang::sym(input$colorAttribute)
 #          val <- eventlog %>% pull(!!attr)
-#          if (is.character(val) || is.factor(val)) {
-#            eventlog <- eventlog %>%
-#              add_token_color(input$colorAttribute, "color",
-#                              color_mapping = scales::col_factor("YlOrBr", val, na.color = "red"))
-#          } else if (is.logical(val)) {
-#            eventlog <- eventlog %>%
-#              add_token_color(input$colorAttribute, "color",
-#                              color_mapping = scales::col_factor(c("green", "orange"), levels = c(T,F), na.color = "red"))
-#          } else { #fallback to numeric
-#            eventlog <- eventlog %>%
-#              mutate(!!attr := as.numeric(!!attr)) %>%
-#              add_token_color(input$colorAttribute, "color")
+#          if (!(is.character(val) || is.factor(val))) {
+#            warning("Trying to use a numeric attribute for the token color!")
 #          }
 #        }
 #  
@@ -64,14 +54,8 @@ knitr::opts_chunk$set(
 #          # This only works for numeric attributes
 #          attr <- rlang::sym(input$sizeAttribute)
 #          val <- eventlog %>% pull(!!attr)
-#          if (is.numeric(val)) {
-#            eventlog <- eventlog %>%
-#              mutate(!!attr := as.numeric(!!attr)) %>%
-#              add_token_size(input$sizeAttribute, "size")
-#          } else {
+#          if (!is.numeric(val)) {
 #            warning("Trying to use a non-numeric attribute for the token size!")
-#            eventlog <- eventlog %>%
-#              mutate(size = 6)
 #          }
 #        }
 #  
@@ -96,26 +80,29 @@ knitr::opts_chunk$set(
 #        model <- DiagrammeR::add_global_graph_attrs(graph, attr = "rankdir", value = input$orientation, attr_type = "graph")
 #        if (input$sizeAttribute != "none" && input$colorAttribute != "none") {
 #          animate_process(data(), model,
-#                          animation_mode = input$type,
-#                          token_size = "size",
-#                          token_color = "color",
-#                          animation_duration = input$duration,
-#                          elementId = "process")
+#                          mode = input$type,
+#                          legend = "color",
+#                          mapping = token_aes(color = token_scale(input$colorAttribute, scale = "ordinal",
+#                                                                  range = RColorBrewer::brewer.pal(5, "YlOrBr")),
+#                                              size = token_scale(input$sizeAttribute, scale = "linear", range = c(6,10))),
+#                          duration = input$duration)
 #        } else if (input$sizeAttribute != "none") {
 #          animate_process(data(), model,
-#                          animation_mode = input$type,
-#                          token_size = "size",
-#                          animation_duration = input$duration)
+#                          mode = input$type,
+#                          legend = "size",
+#                          mapping = token_aes(size = token_scale(input$sizeAttribute, scale = "linear", range = c(6,10))),
+#                          duration = input$duration)
 #  
 #        } else if (input$colorAttribute != "none") {
 #          animate_process(data(), model,
 #                          animation_mode = input$type,
-#                          token_color = "color",
-#                          animation_duration = input$duration)
+#                          legend = "color",
+#                          mapping = token_aes(color = token_scale(input$colorAttribute, scale = "ordinal", range = RColorBrewer::brewer.pal(5, "YlOrBr"))),
+#                          duration = input$duration)
 #        } else {
 #          animate_process(data(), model,
-#                          animation_mode = input$type,
-#                          animation_duration = input$duration)
+#                          mode = input$type,
+#                          duration = input$duration)
 #        }
 #  
 #      })
