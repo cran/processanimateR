@@ -1,9 +1,9 @@
 /*
-processanimateR 1.0.0
+processanimateR 1.0.1
 Copyright (c) 2018 Felix Mannhardt
 Licensed under MIT license
 */
-function Scales(el) {
+function PAScales(el) {
 
   var legendSvg = null;
 
@@ -66,7 +66,7 @@ function Scales(el) {
         .attr("class", "processanimater-legend")
         .attr("style", "outline: thin solid black;")
         .attr("filter", "url(#box)")
-        .attr("transform", "translate(20,25)");
+        .attr("transform", "translate(20,20)");
 
       switch(data.legend) {
         case "color":
@@ -86,7 +86,7 @@ function Scales(el) {
   };
 
   this.resizeLegend = function(svg, width, height) {
-    if (legendSvg) {
+    if (legendSvg && width > 0 && height > 0) {
       legendSvg.attr("style", "position: relative; bottom: "+height+"px; left: "+(width - legendSvg.attr("width")) +"px; z-index: 999;");
       el.insertBefore(legendSvg.node(), null); // keep as last child!
     }

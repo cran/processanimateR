@@ -95,7 +95,7 @@ knitr::opts_chunk$set(
 #  
 #        } else if (input$colorAttribute != "none") {
 #          animate_process(data(), model,
-#                          animation_mode = input$type,
+#                          mode = input$type,
 #                          legend = "color",
 #                          mapping = token_aes(color = token_scale(input$colorAttribute, scale = "ordinal", range = RColorBrewer::brewer.pal(5, "YlOrBr"))),
 #                          duration = input$duration)

@@ -1,7 +1,8 @@
 # processanimateR
 
-> Flexible token replay animation for process maps created by bupaR using GraphViz rendering or Leaflet rendering.
+> Flexible token replay animation for process maps created by bupaR using SVG animations.
 
+[![](https://cranlogs.r-pkg.org/badges/processanimateR)](https://cran.r-project.org/package=processanimateR)
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/processanimateR)](https://cran.r-project.org/package=processanimateR)
 [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 [![Travis-CI Build Status](https://travis-ci.org/fmannhardt/processanimateR.svg?branch=master)](https://travis-ci.org/fmannhardt/processanimateR)
@@ -100,7 +101,7 @@ Felix Mannhardt ([SINTEF Digital -- Technology Management Department](https://ww
 
 ## License
 
-This software is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
+This software is licensed under the MIT License - see the [LICENSE](https://github.com/fmannhardt/processanimateR/blob/master/LICENSE.md) file for details.
 
 ## Acknowledgments
 
