@@ -56,10 +56,11 @@
 #' @import dplyr
 #' @importFrom magrittr %>%
 #' @importFrom rlang :=
+#' @importFrom processmapR process_map
 #'
 #' @export
 animate_process <- function(eventlog,
-                            processmap = processmapR::process_map(eventlog, render = F, ...),
+                            processmap = process_map(eventlog, render = F, ...),
                             renderer = renderer_graphviz(),
                             mode = c("absolute","relative","off"),
                             duration = 60,
@@ -98,6 +99,7 @@ animate_process <- function(eventlog,
   case <- case_end <- log_start <- log_duration <- case_duration <- from_id <- to_id <- NULL
   label <- act <- NULL
   token_start <- token_end <- activity_duration <- token_duration <- NULL
+  constraint <- weight <- NULL
 
   mode <- match.arg(mode)
   initial_state <- match.arg(initial_state)
@@ -191,8 +193,25 @@ animate_process <- function(eventlog,
     a_factor <- 0
   }
 
+  if ("weight" %in% colnames(processmap$edges_df)) {
+	  	# hack to add 'weight' attribute to the graph
+		  processmap$edges_df %>%
+			  mutate(len = weight) -> processmap$edges_df
+  }
+
+  if ("constraint" %in% colnames(processmap$edges_df)) {
+	  	# hack to add 'weight' attribute to the graph
+		  processmap$edges_df %>%
+			  mutate(decorate = constraint) -> processmap$edges_df
+  }
+
   # actually render the process map
   rendered_process <- renderer(processmap, width, height)
+
+  # hack to add 'weight' attribute to the graph
+  rendered_process %>%
+    stringr::str_replace_all("len", "weight") %>%
+    stringr::str_replace_all("decorate", "constraint") -> rendered_process
 
   settings <- list()
   x <- list(

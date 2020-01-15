@@ -1,10 +1,10 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library(processanimateR)
 #  library(shiny)
 #  library(shinycssloaders)
@@ -113,7 +113,7 @@ knitr::opts_chunk$set(
 #  
 #  }
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library(eventdataR)
 #  library(edeaR)
 #  library(dplyr)

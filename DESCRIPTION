@@ -1,7 +1,7 @@
 Package: processanimateR
 Type: Package
 Title: Process Map Token Replay Animation
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(person("Felix","Mannhardt", email = "felix.mannhardt@sintef.no", role = c("aut","cre")),
   person("Gert","Janssenswillen",email = "gert.janssenswillen@uhasselt.be", role = c("ctb")))
 Description: Provides animated process maps based on the 'procesmapR' package.
@@ -14,17 +14,17 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10)
 Imports: bupaR, processmapR (>= 0.3.1), rlang, magrittr, dplyr, tidyr,
-        htmlwidgets, DiagrammeR (>= 1.0.0), grDevices
+        htmlwidgets, DiagrammeR (>= 1.0.0), grDevices, stringr
 Suggests: eventdataR, edeaR, testthat, knitr, rmarkdown, shiny,
         RColorBrewer, lubridate
-RoxygenNote: 6.1.1
-URL: https://github.com/fmannhardt/processanimateR/
-BugReports: https://github.com/fmannhardt/processanimateR/issues
+RoxygenNote: 7.0.2
+URL: https://github.com/bupaverse/processanimateR/
+BugReports: https://github.com/bupaverse/processanimateR/issues
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-06-12 10:24:29 UTC; felixm
+Packaged: 2020-01-15 16:03:28 UTC; felixm
 Author: Felix Mannhardt [aut, cre],
   Gert Janssenswillen [ctb]
 Maintainer: Felix Mannhardt <felix.mannhardt@sintef.no>
 Repository: CRAN
-Date/Publication: 2019-06-12 10:40:03 UTC
+Date/Publication: 2020-01-15 16:40:02 UTC

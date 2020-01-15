@@ -1,10 +1,10 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ----echo = TRUE, message = FALSE----------------------------------------
+## ----echo = TRUE, message = FALSE---------------------------------------------
 library(processanimateR)
 library(dplyr)
 library(bupaR)

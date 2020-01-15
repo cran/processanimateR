@@ -27,11 +27,7 @@ function PAPlaybackControl(el) {
 
   this.renderPlaybackControl = function(data, svg, width, initial) {
 
-    if (data.timeline &&
-        // Polyfill fakesmile does not support pausing/unpausing for IE
-        typeof SVGSVGElement.prototype.animationsPaused === "function") {
-
-      // Clean-up
+    function cleanup() {
       if (sliderSvg) {
         sliderSvg.remove();
       }
@@ -41,6 +37,21 @@ function PAPlaybackControl(el) {
       if (sliderLoop) {
         window.cancelAnimationFrame(sliderLoop);
       }
+    }
+
+    if (typeof SVGSVGElement.prototype.animationsPaused !== "function") {
+      // Polyfill fakesmile does not support pausing/unpausing for IE
+      return;
+    }
+
+    if (!data.timeline) {
+
+      cleanup();
+
+    } else {
+
+      // Clean-up
+      cleanup();
 
       // re-calculate dimensions
       var swidth = width - smargin.left - smargin.right;
@@ -153,7 +164,7 @@ function PAPlaybackControl(el) {
       animateSlider(svg, data);
 
       if (initial) {
-        repeatAnimation(svg, data);
+        repeatAnimation(svg, data, 'Shiny' in window);
         // Configure initial playback state
         if (data.initial_state === "paused") {
           _pauseAnimation();
@@ -174,7 +185,7 @@ function PAPlaybackControl(el) {
   var repeatLoop = null;
   var repeatCount = 1;
 
-  function repeatAnimation(svg, data) {
+  function repeatAnimation(svg, data, isShiny) {
     if (data.repeat_count === null) {
       data.repeat_count = Infinity;
     }
@@ -187,7 +198,7 @@ function PAPlaybackControl(el) {
         svg.setCurrentTime(0);
         repeatCount++;
       }
-      if ('Shiny' in window) {
+      if (isShiny) {
         if (time > data.duration) {
           time = data.duration;
         }
@@ -201,25 +212,22 @@ function PAPlaybackControl(el) {
   }
 
   function animateSlider(svg, data) {
-    if (data.mode === "relative") {
-      (function(){
+    var lastTime = 0;
+    var throttleDelta = 1000 / 18;
+    (function(timestamp){
+        if (timestamp - lastTime > throttleDelta) {
           var time = svg.getCurrentTime();
-          if (time > 0 && time <= data.duration) {
+          if (time > 0 && time <= data.duration && !svg.animationsPaused()) {
             var realTime = data.timeline_start + time * data.factor;
+            if (data.mode === "absolute") {
+              realTime = new Date(realTime);
+            }
             slider.silentValue(realTime);
           }
-          sliderLoop = window.requestAnimationFrame(arguments.callee);
-      })();
-    } else {
-      (function(){
-          var time = svg.getCurrentTime();
-          if (time > 0 && time <= data.duration) {
-            var realTime = new Date(data.timeline_start + (time * data.factor));
-            slider.silentValue(realTime);
-          }
-          sliderLoop = window.requestAnimationFrame(arguments.callee);
-      })();
-    }
+          lastTime = timestamp;
+        }
+        sliderLoop = window.requestAnimationFrame(arguments.callee);
+    })();
   }
 
 }

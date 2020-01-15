@@ -1,10 +1,10 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ----echo = TRUE, message = FALSE----------------------------------------
+## ----echo = TRUE, message = FALSE---------------------------------------------
 # Libraries ---------------------------------------------------------------
 library(dplyr)            ##pipes
 library(tidyr)            ##tidy data, partcularly the crossing() function
@@ -17,7 +17,7 @@ my_flags <- data.frame(value = c(0,2,4,8,16)) %>%
             mutate(day = days(value)) #convert numeric value into days
 
 
-## ----echo = TRUE, message = FALSE----------------------------------------
+## ----echo = TRUE, message = FALSE---------------------------------------------
 # Create timestamps of flags ----------------------------------------------
 
 my_timeflags <- patients %>% 
@@ -27,7 +27,7 @@ my_timeflags <- patients %>%
                 filter(time <= complete_timestamp) %>% 
                 select("case" = patient,time,value) ##must be case, time, value
 
-## ----echo = TRUE, message = FALSE----------------------------------------
+## ----echo = TRUE, message = FALSE---------------------------------------------
 # Animate process ---------------------------------------------------------
 
 patients %>%
