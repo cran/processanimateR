@@ -1,6 +1,6 @@
 /*
-processanimateR 1.0.1
-Copyright (c) 2018 Felix Mannhardt
+processanimateR 1.0.3
+Copyright (c) 2019 Felix Mannhardt
 Licensed under MIT license
 */
 function PAPlaybackControl(el) {
@@ -161,15 +161,17 @@ function PAPlaybackControl(el) {
         }
       });
 
-      animateSlider(svg, data);
+      if (data.mode != "off") {
+        animateSlider(svg, data);
 
-      if (initial) {
-        repeatAnimation(svg, data, 'Shiny' in window);
-        // Configure initial playback state
-        if (data.initial_state === "paused") {
-          _pauseAnimation();
+        if (initial) {
+          repeatAnimation(svg, data, 'Shiny' in window);
+          // Configure initial playback state
+          if (data.initial_state === "paused") {
+            _pauseAnimation();
+          }
+          svg.setCurrentTime(Math.max(0,Math.min(data.duration, data.initial_time)));
         }
-        svg.setCurrentTime(Math.max(0,Math.min(data.duration, data.initial_time)));
       }
 
       // Wire-up the public API
@@ -208,7 +210,7 @@ function PAPlaybackControl(el) {
           Shiny.onInputChange(el.id + "_time", new Date(data.timeline_start + (time * data.factor)));
         }
       }
-    }, 500);
+    }, 1000);
   }
 
   function animateSlider(svg, data) {

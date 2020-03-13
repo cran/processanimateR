@@ -2,6 +2,11 @@
 #'
 #' This renderer uses viz.js to render the process map using the DOT layout.
 #'
+#' @param svg_fit Whether to scale the process map to fully fit in its container. If set to `TRUE` the process map will be scaled to be fully visible and may appear very small.
+#' @param svg_contain Whether to scale the process map to use all available space (contain) from its container. If set to `FALSE`, if `svg_fit` is set this takes precedence.
+#' @param svg_resize_fit Whether to (re)-fit the process map to its container upon resize.
+#' @param zoom_controls Whether to show zoom controls.
+#' @param zoom_initial The initial zoom level to use.
 #' @return A rendering function to be used with \code{\link{animate_process}}
 #' @export
 #'
@@ -13,13 +18,38 @@
 #'
 #' @seealso animate_process
 #'
-renderer_graphviz <- function() {
+renderer_graphviz <- function(svg_fit = TRUE,
+                              svg_contain = FALSE,
+                              svg_resize_fit = TRUE,
+                              zoom_controls = TRUE,
+                              zoom_initial = NULL) {
+
   render <- function(processmap, width, height) {
     # Generate the DOT source
     graph <- DiagrammeR::render_graph(processmap, width = width, height = height)
-    graph$x$diagram
+    diagram <- graph$x$diagram
+
+    # hack to add 'weight' attribute to the graph (see same approach in processmapR)
+    diagram %>%
+      stringr::str_replace_all("len", "weight") %>%
+      stringr::str_replace_all("decorate", "constraint")
   }
+
   attr(render, "name") <- "graph"
+  attr(render, "dependencies") <- list(htmltools::htmlDependency(name = "viz.js",
+                                                                version = "2.1.2",
+                                                                src = c(file="htmlwidgets/lib/viz"),
+                                                                script = c("viz.js",
+                                                                           "full.render.js"),
+                                                                all_files = FALSE,
+                                                                package = "processanimateR"))
+  attr(render, "config") <- list(
+    svg_fit = svg_fit,
+    svg_contain = svg_contain,
+    svg_resize_fit = svg_resize_fit,
+    zoom_controls = zoom_controls,
+    zoom_initial = zoom_initial
+  )
 
   return(render)
 }
@@ -51,7 +81,7 @@ renderer_graphviz <- function() {
 #' animate_process(example_log,
 #'   renderer = renderer_leaflet(
 #'     node_coordinates = data.frame(
-#'        act = c("A", "B", "C", "D", "Start", "End"),
+#'        act = c("A", "B", "C", "D", "ARTIFICIAL_START", "ARTIFICIAL_END"),
 #'        lat = c(63.443680, 63.426925, 63.409207, 63.422336, 63.450950, 63.419706),
 #'        lng = c(10.383625, 10.396972, 10.406418, 10.432119, 10.383368, 10.252347),
 #'        stringsAsFactors = FALSE),
@@ -91,15 +121,25 @@ renderer_leaflet <- function(node_coordinates,
     from_act <- from_lat <- from_lng <- to_act <- to_lat <- to_lng <- NULL
     lng <- lat <- color <- penwidth <- from <- to <- . <- NULL
 
+    if (any(node_coordinates$act == "Start" | node_coordinates$act == "End")) {
+      warning("You specified the coordinates for 'Start' and 'End' activities. Please note that 'processmapR' changed the names of the auto-generated 'Start' and 'End' activities to 'ARTIFICIAL_START' and 'ARTIFICIAL_END' and use those terms instead!")
+    }
+
+    node_coordinates <- node_coordinates %>%
+      filter(act == "Start" | act == "End") %>%
+      mutate(act = if_else(act == "Start", "ARTIFICIAL_START", "ARTIFICIAL_END")) %>%
+      bind_rows(node_coordinates)
+
     precedence <- attr(processmap, "base_precedence")
     nodes <- processmap$nodes_df %>%
       select(id, shape, label, fillcolor, fontcolor) %>%
       left_join(precedence %>% distinct(act, from_id), by = c("id" = "from_id")) %>%
       left_join(node_coordinates, by = c("act" = "act")) %>%
       mutate(fillcolor = sapply(fillcolor, colConv))
+
     if (any(is.na(nodes))) {
-      stop(paste0("Missing coordinates for activities",
-                  nodes$act[which(is.na(nodes$lat) | is.na(nodes$lng))]));
+      stop(paste0("Missing coordinates for activities: ",
+                  paste(nodes$act[which(is.na(nodes$lat) | is.na(nodes$lng))], collapse = ", ")))
     }
 
     edges_from <- processmap$edges_df %>%
@@ -121,7 +161,7 @@ renderer_leaflet <- function(node_coordinates,
     edges <- bind_rows(edges_from, edges_extra, edges_to) %>%
       mutate(color = sapply(color, colConv)) %>%
       select(id, from, to, lat, lng, label, penwidth, color) %>%
-      tidyr::nest(lat, lng, .key = "path")
+      tidyr::nest("path" = c(lat, lng))
 
     list("nodes" = nodes,
          "edges" = edges,
@@ -135,6 +175,27 @@ renderer_leaflet <- function(node_coordinates,
          "scale_min" = scale_min)
   }
   attr(render, "name") <- "map"
+  attr(render, "dependencies") <- list(htmltools::htmlDependency(name = "leaflet",
+                                                                version = "1.5.1",
+                                                                src = c(file="htmlwidgets/lib/leaflet"),
+                                                                script = "leaflet.min.js",
+                                                                stylesheet = c("leaflet.css", "leaflet-grayscale.css"),
+                                                                attachment = c("images/layers.png",
+                                                                               "images/layers-2x.png",
+                                                                               "images/marker-icon-2x.png",
+                                                                               "images/marker-icon.png",
+                                                                               "images/marker-shadow.png"),
+                                                                all_files = FALSE,
+                                                                package = "processanimateR"),
+                                     htmltools::htmlDependency(name = "leaflet-d3-svg-overlay",
+                                                              version = "2.2",
+                                                              src = c(file="htmlwidgets/lib/leaflet-d3-svg-overlay"),
+                                                              script = "leaflet-d3-svg-overlay.js",
+                                                              all_files = FALSE,
+                                                              package = "processanimateR"))
+
+  attr(render, "config") <- list(
+  )
 
   return(render)
 }

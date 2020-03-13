@@ -1,6 +1,6 @@
 /*
-processanimateR 1.0.1
-Copyright (c) 2018 Felix Mannhardt
+processanimateR 1.0.3
+Copyright (c) 2019 Felix Mannhardt
 Licensed under MIT license
 */
 function PARendererGraphviz(el) {
@@ -108,7 +108,7 @@ function PARendererGraphviz(el) {
     ).catch(function(error) {
       viz = new PAViz();
       var p = document.createElement("p");
-      var t = document.createTextNode("Failed to render the graph. It is probably too large. Original error: "+error);
+      var t = document.createTextNode("Failed to render the graph. It is probably too large. Original error: "+ error.stack);
       p.appendChild(t);
       if (el.hasChildNodes()) {
         el.replaceChild(p, el.childNodes[0]);
@@ -120,6 +120,9 @@ function PARendererGraphviz(el) {
 
   this.resize = function(width, height) {
 
+    var oldWidth = svg.getAttribute("width");
+    var oldHeight = svg.getAttribute("height");
+
     if (height > 0 && width > 0) {
       // Adjust GraphViz diagram size
       svg.setAttribute("width", width);
@@ -128,11 +131,108 @@ function PARendererGraphviz(el) {
 
     if (isRendered(el)) {
       if (svgPan) {
+
         svgPan.resize();
-        svgPan.fit();
-        svgPan.center();
+
+        if (data.svg_resize_fit) {
+          svgPan.center();
+          svgPan.fit();
+        } else {
+          svgPan.pan({x: (svgPan.getPan().x / oldWidth) * width,
+                      y: (svgPan.getPan().y / oldHeight) * height});
+        }
+
       } else {
-        svgPan = svgPanZoom(svg, { dblClickZoomEnabled: false, preventEventsDefaults: true });
+
+        var eventsHandler = {
+          haltEventListeners: ['touchstart', 'touchend', 'touchmove', 'touchleave', 'touchcancel'],
+          init: function(options) {
+            var instance = options.instance
+              , initialScale = 1
+              , pannedX = 0
+              , pannedY = 0;
+
+            // Init Hammer
+            // Listen only for pointer and touch events
+            this.hammer = Hammer(options.svgElement, {
+              inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput
+            });
+
+            // Enable pinch
+            this.hammer.get('pinch').set({enable: true});
+
+            // Handle double tap
+            this.hammer.on('doubletap', function(ev){
+              instance.zoomIn();
+            });
+
+            // Handle pan
+            this.hammer.on('panstart panmove', function(ev){
+              // On pan start reset panned variables
+              if (ev.type === 'panstart') {
+                pannedX = 0;
+                pannedY = 0;
+              }
+
+              // Pan only the difference
+              instance.panBy({x: ev.deltaX - pannedX, y: ev.deltaY - pannedY});
+              pannedX = ev.deltaX;
+              pannedY = ev.deltaY;
+            });
+
+            // Handle pinch
+            this.hammer.on('pinchstart pinchmove', function(ev){
+              // On pinch start remember initial zoom
+              if (ev.type === 'pinchstart') {
+                initialScale = instance.getZoom();
+                instance.zoomAtPoint(initialScale * ev.scale, {x: ev.center.x, y: ev.center.y});
+              }
+
+              instance.zoomAtPoint(initialScale * ev.scale, {x: ev.center.x, y: ev.center.y});
+            });
+
+            // Prevent moving the page on some devices when panning over SVG
+            options.svgElement.addEventListener('touchmove', function(e){ e.preventDefault(); });
+          }
+
+        , destroy: function(){
+            this.hammer.destroy();
+          }
+        };
+
+        svgPan = svgPanZoom(svg, { dblClickZoomEnabled: true,
+                                   preventEventsDefaults: true,
+                                   controlIconsEnabled: data.zoom_controls,
+                                   customEventsHandler: eventsHandler
+        });
+
+        if (data.svg_fit) {
+          svgPan.fit();
+          svgPan.center();
+        } else {
+          if (data.svg_contain) {
+            svgPan.contain();
+            svgPan.pan({x: 0, y: 0});
+          } else {
+            var s = svgPan.getSizes();
+            if (s.width > s.height) {
+              if (data.zoom_initial) {
+                svgPan.zoomAtPoint(data.zoom_initial,
+                                   {x: 0, y: s.height / 2});
+              } else {
+                svgPan.pan({x: 0, y: -s.height / 2});
+              }
+            } else {
+              if (data.zoom_initial) {
+                svgPan.zoomAtPoint(data.zoom_initial,
+                                   {x: s.width / 2, y: 0});
+              } else {
+                svgPan.pan({x: s.width / 2, y: 0});
+              }
+            }
+          }
+        }
+
       }
     }
 
